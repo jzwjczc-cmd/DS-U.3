@@ -1,0 +1,102 @@
+{
+ "_comment": "API-U30-K：#259 素材节点，#301 模型加载器 lora_1，#313 解码前 VRAMCleanup；默认 Singularity 剪枝 INT8 + ref2v turbo 4step 强度 1；#208 接 #143 与 #301 VAE，一采和二采都走 #208，无 LMS；#71 为 6 步，#99 在第 2 步切开，高噪 2 步、低噪 14 步；16:9/0.7MP、10秒、放大1.5、CLIP INT8",
+ "defaultDuration": "10",
+ "defaultSteps": "6",
+ "defaultPass2Scale": 1.5,
+ "pass2ScaleHint": "推荐最大倍数为 1.5，设置更高会出现伪影加重或画质畸变",
+ "defaultResolutionKey": "1152x640",
+ "maxResolutionMp": 2,
+ "defaultOrientation": "landscape",
+ "defaultAspectRatio": "16:9 (Widescreen)",
+ "defaultMegapixels": 0.7,
+ "defaultModelKey": "ref2va_singularity_pruned_int8",
+ "defaultClipKey": "qwen3vl_int8",
+ "defaultSeed": 631838581842996,
+ "forceVramCleanupBeforeVae": true,
+ "refImageSize": "match",
+ "defaultLoraKey": "ref2v_turbo_4step_v01",
+ "defaultLoraStrength": 1,
+ "defaultExtraLoraKey": "none",
+ "defaultExtraLoraStrength": 1,
+ "sampleImages": [
+  {
+   "file": "48902645c4194b9ed74e6da4dd0dda2c32106c83093252478396371e7f9dc6d4.png",
+   "subject": "黑红刺客"
+  },
+  {
+   "file": "02a999c9985ab38e53c83e333ccb3eb789b4bc26f8e00d4ee886275ef428b072.png",
+   "subject": "青金女战士"
+  }
+ ],
+ "settingsTip": {
+  "title": "U30 尺寸对照表",
+  "layout": "table",
+  "combos": [
+   {
+    "combo": "0.2",
+    "output": "896×512"
+   },
+   {
+    "combo": "0.3",
+    "output": "1088×640"
+   },
+   {
+    "combo": "0.4",
+    "output": "1280×704"
+   },
+   {
+    "combo": "0.5",
+    "output": "1440×832"
+   },
+   {
+    "combo": "0.6",
+    "output": "1600×896"
+   },
+   {
+    "combo": "0.7",
+    "output": "1728×960",
+    "tag": "默认"
+   },
+   {
+    "combo": "0.8",
+    "output": "1824×1024"
+   },
+   {
+    "combo": "0.9",
+    "output": "1920×1088"
+   },
+   {
+    "combo": "0.98",
+    "output": "2016×1152"
+   },
+   {
+    "combo": "1.0",
+    "output": "2048×1152"
+   },
+   {
+    "combo": "1.2",
+    "output": "2240×1248",
+    "tone": "danger"
+   },
+   {
+    "combo": "1.5",
+    "output": "2496×1408",
+    "tone": "danger"
+   },
+   {
+    "combo": "1.8",
+    "output": "2752×1536",
+    "tone": "danger"
+   },
+   {
+    "combo": "2.0",
+    "output": "2880×1632",
+    "tone": "danger"
+   }
+  ],
+  "notes": [
+   "当你的分辨率，时长，参考输入量都大时，可能失败。你可以尝试以默认值为基础微调摸清当前显卡能生成的最佳时长和质量。通常15秒以上失败概率高。"
+  ],
+  "intro": "下面尺寸是按照1.5倍率计算。"
+ }
+}

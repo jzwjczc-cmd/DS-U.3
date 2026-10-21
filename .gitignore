@@ -1,0 +1,16 @@
+# 排除体积大或带密钥的内容
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.ckpt
+*.pth
+*.onnx
+models/
+keys/
+.env
+*.key
+*.pem
+outputs/
+logs/
+__pycache__/
