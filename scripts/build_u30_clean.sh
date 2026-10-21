@@ -9,7 +9,10 @@
 #        (PyTorch 官方镜像自带；Ubuntu 基础镜像先装 conda 亦可)
 # =============================================================
 set -e
+# AutoDL 网络加速（若镜像存在则启用，加速 GitHub/pip/hf 下载）
+[ -f /etc/network_turbo ] && source /etc/network_turbo 2>/dev/null || true
 export HF_ENDPOINT=${HF_ENDPOINT:-https://hf-mirror.com}   # 国内镜像，可改官方 https://huggingface.co
+export PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
 
 say() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
