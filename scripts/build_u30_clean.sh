@@ -53,7 +53,13 @@ git --version || { apt-get update -y && apt-get install -y git; }
 say "== 1. 克隆官方 ComfyUI =="
 if [ ! -d "$CU/.git" ]; then
   gcl "$CU" "https://github.com/Comfy-Org/ComfyUI.git"
-  pip install -r "$CU/requirements.txt" -q || pip install -r "$CU/requirements.txt"
+  if pip install -r "$CU/requirements.txt" -q 2>/dev/null; then
+    say "requirements 安装完成"
+  else
+    say "完整 requirements 失败(py3.12 与 workflow-templates 系列不兼容)，降级为核心依赖..."
+    grep -vE 'workflow-templates|media-assets' "$CU/requirements.txt" > /tmp/comfy_req.txt
+    pip install -r /tmp/comfy_req.txt -q || pip install -r /tmp/comfy_req.txt
+  fi
 else
   say "ComfyUI 已存在，跳过"
 fi
