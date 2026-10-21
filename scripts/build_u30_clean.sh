@@ -20,6 +20,25 @@ export PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
 
 say() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
+# 智能克隆：直连失败自动切换 GitHub 镜像（AutoDL 国内节点直连 github 常超时）
+gcl() { # $1 目标目录, $2 https://github.com/owner/repo
+  local d="$1" u="$2"
+  [ -d "$d/.git" ] && { say "已有 $u"; return 0; }
+  if git clone --depth 1 "$u" "$d" 2>/dev/null; then say "克隆成功(直连): $u"; return 0; fi
+  for m in "https://ghproxy.net" "https://gh-proxy.com" "https://ghfast.top" "https://gitclone.com/github.com"; do
+    local mu
+    if [ "$m" = "https://gitclone.com/github.com" ]; then
+      mu="https://gitclone.com/github.com/${u#https://github.com/}"
+    else
+      mu="$m/${u#https://}"
+    fi
+    say "直连失败，改用镜像 $m ..."
+    git clone --depth 1 "$mu" "$d" 2>/dev/null && { say "克隆成功(镜像 $m): $u"; return 0; }
+  done
+  say "!! 克隆失败(直连+镜像均不可用): $u"
+  return 1
+}
+
 CU=/root/ComfyUI
 REPO=/root/DS-U.3
 M=/root/autodl-tmp/u30_models   # 数据盘模型根目录（镜像不含，开机自启补齐）
@@ -33,13 +52,14 @@ git --version || { apt-get update -y && apt-get install -y git; }
 
 say "== 1. 克隆官方 ComfyUI =="
 if [ ! -d "$CU/.git" ]; then
-  git clone --depth 1 https://github.com/Comfy-Org/ComfyUI.git "$CU"
+  gcl "$CU" "https://github.com/Comfy-Org/ComfyUI.git"
   pip install -r "$CU/requirements.txt" -q || pip install -r "$CU/requirements.txt"
 else
   say "ComfyUI 已存在，跳过"
 fi
 
 say "== 2. 安装插件 =="
+mkdir -p "$CU/custom_nodes"
 cd "$CU/custom_nodes"
 for repo in \
   "https://github.com/ltdrdata/ComfyUI-Manager.git" \
@@ -49,11 +69,10 @@ for repo in \
   "https://github.com/LBH-123-AI/Comfyui_Minimax_h3_latent_Upscaler.git" \
   "https://github.com/LAOGOU-666/Comfyui-Memory_Cleanup.git"; do
   name=$(basename "$repo" .git)
-  [ -d "$name" ] || { git clone --depth 1 "$repo" || say "!! 克隆失败: $name (可手动重试)"; }
+  gcl "$name" "$repo" || true
 done
 # 语义桥(可选增强，装不上不影响出片)
-[ -d "MiniMax-H3-Semantic-Bridge" ] || \
-  git clone --depth 1 "https://github.com/Speach1sdef178/MiniMax-H3-Semantic-Bridge.git" 2>/dev/null || true
+gcl "MiniMax-H3-Semantic-Bridge" "https://github.com/Speach1sdef178/MiniMax-H3-Semantic-Bridge.git" 2>/dev/null || true
 
 say "== 3. 配置模型目录(数据盘) + extra_model_paths =="
 mkdir -p "$M"/{diffusion_models,text_encoders,vae,loras,minimax_h3_latent_upscaler}
@@ -104,7 +123,7 @@ fi
 
 say "== 5. 素材与发布仓库 =="
 if [ ! -d "$REPO/.git" ]; then
-  git clone https://github.com/jzwjczc-cmd/DS-U.3.git "$REPO"
+  gcl "$REPO" "https://github.com/jzwjczc-cmd/DS-U.3.git"
 fi
 mkdir -p "$CU/input"
 cp -f "$REPO/samples/ref_sample_1.png" "$CU/input/" 2>/dev/null || true
