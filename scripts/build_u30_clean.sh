@@ -20,10 +20,15 @@ export PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
 
 say() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
+# 代理开关：GitHub 克隆走 AutoDL 加速代理；国内源(pip/hf-mirror)绕开代理直连
+proxy_off() { unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy; }
+proxy_on() { [ -f /etc/network_turbo ] && { . /etc/network_turbo 2>/dev/null; } || true; }
+
 # 智能克隆：直连失败自动切换 GitHub 镜像（AutoDL 国内节点直连 github 常超时）
 gcl() { # $1 目标目录, $2 https://github.com/owner/repo
   local d="$1" u="$2"
   [ -d "$d/.git" ] && { say "已有 $u"; return 0; }
+  proxy_on
   if git clone --depth 1 "$u" "$d" 2>/dev/null; then say "克隆成功(直连): $u"; return 0; fi
   for m in "https://ghproxy.net" "https://gh-proxy.com" "https://ghfast.top" "https://gitclone.com/github.com"; do
     local mu
@@ -53,6 +58,7 @@ git --version || { apt-get update -y && apt-get install -y git; }
 say "== 1. 克隆官方 ComfyUI =="
 if [ ! -d "$CU/.git" ]; then
   gcl "$CU" "https://github.com/Comfy-Org/ComfyUI.git"
+  proxy_off
   if pip install -r "$CU/requirements.txt" -q 2>/dev/null; then
     say "requirements 安装完成"
   else
@@ -94,6 +100,7 @@ EOF
 say "模型根目录: $M (extra_model_paths.yaml 已写入 $CU)"
 
 say "== 4. 下载模型 (~53GB，走 hf-mirror) =="
+proxy_off
 cd /root
 pip install -q huggingface_hub 2>/dev/null || true
 dl() { # $1 repo $2 远端路径 $3 本地目标
@@ -144,6 +151,7 @@ cat > /root/fetch_models.sh <<EOF
 set -e
 [ -f /etc/network_turbo ] && source /etc/network_turbo 2>/dev/null || true
 export HF_ENDPOINT=${HF_ENDPOINT:-https://hf-mirror.com}
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy   # hf-mirror 直连
 M=$M
 mkdir -p \$M/{diffusion_models,text_encoders,vae,loras,minimax_h3_latent_upscaler}
 pip install -q huggingface_hub 2>/dev/null || true
